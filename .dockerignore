@@ -1,0 +1,6 @@
+.git
+.gitignore
+README.md
+prompt.txt
+k6/
+*.md

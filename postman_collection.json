@@ -1,0 +1,483 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Content Recommendation Service",
+		"description": "API collection for the Content Recommendation Service.\n\nEndpoints:\n- Single user recommendations\n- Batch recommendations\n- Health check",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						},
+						"description": "Check if the service is running."
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/health",
+									"host": ["{{base_url}}"],
+									"path": ["health"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"body": "{\"status\":\"ok\"}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Single User Recommendations",
+			"item": [
+				{
+					"name": "Get Recommendations (default limit)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/1/recommendations",
+							"host": ["{{base_url}}"],
+							"path": ["users", "1", "recommendations"]
+						},
+						"description": "Get recommendations for user ID 1 with default limit (10)."
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/1/recommendations",
+									"host": ["{{base_url}}"],
+									"path": ["users", "1", "recommendations"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"body": "{\n  \"user_id\": 1,\n  \"recommendations\": [\n    {\n      \"content_id\": 10,\n      \"title\": \"Action Movie A\",\n      \"genre\": \"action\",\n      \"popularity_score\": 0.87,\n      \"score\": 1.04\n    }\n  ],\n  \"metadata\": {\n    \"cache_hit\": false,\n    \"generated_at\": \"2026-02-15T10:30:00Z\",\n    \"total_count\": 1\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Recommendations (custom limit)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/1/recommendations?limit=5",
+							"host": ["{{base_url}}"],
+							"path": ["users", "1", "recommendations"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5",
+									"description": "Number of recommendations to return"
+								}
+							]
+						},
+						"description": "Get 5 recommendations for user ID 1."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Recommendations (large limit)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/3/recommendations?limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["users", "3", "recommendations"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Number of recommendations to return"
+								}
+							]
+						},
+						"description": "Get 20 recommendations for user ID 3 (premium user from JP)."
+					},
+					"response": []
+				},
+				{
+					"name": "User Not Found (404)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/9999/recommendations",
+							"host": ["{{base_url}}"],
+							"path": ["users", "9999", "recommendations"]
+						},
+						"description": "Request recommendations for a non-existent user."
+					},
+					"response": [
+						{
+							"name": "404 Not Found",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/9999/recommendations",
+									"host": ["{{base_url}}"],
+									"path": ["users", "9999", "recommendations"]
+								}
+							},
+							"status": "Not Found",
+							"code": 404,
+							"body": "{\n  \"error\": \"user_not_found\",\n  \"message\": \"User with ID 9999 does not exist\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Invalid User ID (400)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/abc/recommendations",
+							"host": ["{{base_url}}"],
+							"path": ["users", "abc", "recommendations"]
+						},
+						"description": "Request with invalid (non-numeric) user ID."
+					},
+					"response": [
+						{
+							"name": "400 Bad Request",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/abc/recommendations",
+									"host": ["{{base_url}}"],
+									"path": ["users", "abc", "recommendations"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"body": "{\n  \"error\": \"invalid_parameter\",\n  \"message\": \"Invalid user_id parameter\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Invalid Limit (400)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/1/recommendations?limit=-1",
+							"host": ["{{base_url}}"],
+							"path": ["users", "1", "recommendations"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "-1",
+									"description": "Invalid negative limit"
+								}
+							]
+						},
+						"description": "Request with invalid limit parameter."
+					},
+					"response": [
+						{
+							"name": "400 Bad Request",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/1/recommendations?limit=-1",
+									"host": ["{{base_url}}"],
+									"path": ["users", "1", "recommendations"],
+									"query": [
+										{
+											"key": "limit",
+											"value": "-1"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"body": "{\n  \"error\": \"invalid_parameter\",\n  \"message\": \"Invalid limit parameter\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Batch Recommendations",
+			"item": [
+				{
+					"name": "Batch Recommendations (defaults)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/batch",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "batch"]
+						},
+						"description": "Get batch recommendations with default pagination (page=1, limit=20)."
+					},
+					"response": [
+						{
+							"name": "200 OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/recommendations/batch",
+									"host": ["{{base_url}}"],
+									"path": ["recommendations", "batch"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"body": "{\n  \"page\": 1,\n  \"limit\": 20,\n  \"total_users\": 30,\n  \"results\": [\n    {\n      \"user_id\": 1,\n      \"recommendations\": [],\n      \"status\": \"success\"\n    }\n  ],\n  \"summary\": {\n    \"success_count\": 20,\n    \"failed_count\": 0,\n    \"processing_time_ms\": 350\n  },\n  \"metadata\": {\n    \"generated_at\": \"2026-02-15T10:30:00Z\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Batch Recommendations (page 1, limit 10)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/batch?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "batch"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Users per page"
+								}
+							]
+						},
+						"description": "Get batch recommendations for first 10 users."
+					},
+					"response": []
+				},
+				{
+					"name": "Batch Recommendations (page 2, limit 10)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/batch?page=2&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "batch"],
+							"query": [
+								{
+									"key": "page",
+									"value": "2",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Users per page"
+								}
+							]
+						},
+						"description": "Get batch recommendations for second page of 10 users."
+					},
+					"response": []
+				},
+				{
+					"name": "Batch Recommendations (page 3, limit 10)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/batch?page=3&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "batch"],
+							"query": [
+								{
+									"key": "page",
+									"value": "3",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Users per page"
+								}
+							]
+						},
+						"description": "Get batch recommendations for the last page of 10 users (users 21-30)."
+					},
+					"response": []
+				},
+				{
+					"name": "Batch Recommendations (large page size)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/batch?page=1&limit=100",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "batch"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Max users per page"
+								}
+							]
+						},
+						"description": "Get batch recommendations with max page size (100)."
+					},
+					"response": []
+				},
+				{
+					"name": "Batch - Invalid Page (400)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/batch?page=0",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "batch"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Invalid page number"
+								}
+							]
+						},
+						"description": "Request with invalid page parameter (page < 1)."
+					},
+					"response": [
+						{
+							"name": "400 Bad Request",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/recommendations/batch?page=0",
+									"host": ["{{base_url}}"],
+									"path": ["recommendations", "batch"],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"body": "{\n  \"error\": \"invalid_parameter\",\n  \"message\": \"Invalid page parameter\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Batch - Invalid Limit (400)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/batch?limit=200",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "batch"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "200",
+									"description": "Invalid limit (max is 100)"
+								}
+							]
+						},
+						"description": "Request with limit exceeding maximum (100)."
+					},
+					"response": [
+						{
+							"name": "400 Bad Request",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/recommendations/batch?limit=200",
+									"host": ["{{base_url}}"],
+									"path": ["recommendations", "batch"],
+									"query": [
+										{
+											"key": "limit",
+											"value": "200"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"body": "{\n  \"error\": \"invalid_parameter\",\n  \"message\": \"Invalid limit parameter\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Batch - Empty Page (page beyond data)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/batch?page=100&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "batch"],
+							"query": [
+								{
+									"key": "page",
+									"value": "100",
+									"description": "Page beyond available data"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Users per page"
+								}
+							]
+						},
+						"description": "Request a page that has no users (page 100 with only 30 users)."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
