@@ -111,6 +111,19 @@ k6 run k6/batch_stress.js
 k6 run k6/cache_effectiveness.js
 ```
 
+### Postman Collection
+
+A ready-to-import Postman collection is included at the root of the project:
+
+```
+postman_collection.json
+```
+
+To use it:
+1. Open Postman
+2. Click **Import** → select `postman_collection.json`
+3. All endpoints are pre-configured against `http://localhost:8080`
+
 ---
 
 ## 2. Architecture Overview
