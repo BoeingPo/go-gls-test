@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math"
 	"math/rand"
+	"sort"
 	"time"
 
 	"github.com/boeing/go-gls-test/internal/models"
@@ -206,10 +207,7 @@ func (c *Client) calculateScore(content models.Content, genrePreferences map[str
 }
 
 func sortRecommendations(recs []models.Recommendation) {
-	// Simple insertion sort (good enough for <100 items)
-	for i := 1; i < len(recs); i++ {
-		for j := i; j > 0 && recs[j].Score > recs[j-1].Score; j-- {
-			recs[j], recs[j-1] = recs[j-1], recs[j]
-		}
-	}
+	sort.Slice(recs, func(i, j int) bool {
+		return recs[i].Score > recs[j].Score
+	})
 }

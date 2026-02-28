@@ -349,10 +349,12 @@ Repeated requests to 5 users:
 | **Simulated model is synchronous** | Real ML models would likely be called over gRPC/HTTP with proper circuit breakers and timeouts |
 | **No authentication/authorization** | Endpoints are fully open |
 | **Fixed concurrency limit** | The 5-worker pool is hardcoded. Should be configurable based on deployment environment |
+| **Per-call semaphore, not global** | `sem` is a local variable created fresh on every `GetBatchRecommendations` call. Two simultaneous batch requests on the same pod each get their own independent semaphore, so actual concurrent goroutines can reach `maxConcurrency × concurrent_requests` per pod, not `maxConcurrency` globally |
+| **No cross-pod concurrency control** | In a Kubernetes deployment with multiple replicas, each pod maintains its own semaphore with no coordination. With 3 pods and `maxConcurrency=5`, up to 15 model/DB goroutines can run simultaneously across the cluster. If pods share host CPU without defined resource limits (`resources.limits.cpu`), this causes CPU contention and unpredictable latency spikes across all pods on the same node |
 
 ### Scalability Considerations
 
-- **Horizontal scaling**: The app is stateless (cache in Redis, data in Postgres). Multiple instances can run behind a load balancer
+- **Horizontal scaling**: The app is stateless (cache in Redis, data in Postgres). Multiple instances can run behind a load balancer. However, because concurrency control is local per-pod (see Known Limitations above), horizontal scaling multiplies total goroutine concurrency linearly — define `resources.requests.cpu` and `resources.limits.cpu` in the pod spec to prevent CPU starvation between pods on the same node. For true cluster-wide concurrency control, a distributed semaphore
 - **Database**: At scale, the `NOT IN (SELECT ...)` subquery for unwatched content should be replaced with a materialized view or a pre-computed "candidates" table
 - **Redis Cluster**: For high availability, deploy Redis in cluster mode with read replicas
 - **Connection pooling**: Consider pgbouncer in front of Postgres for connection multiplexing at higher request volumes
